@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.ConnectionResult;
+import com.parse.Parse;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -38,5 +39,7 @@ public class MainActivity extends ActionBarActivity {
                 finish();
                 break;
         }
+        Parse.enableLocalDatastore(this);
+        Parse.initialize(this, "5VOniCrxNbtIUmRQ2JYLIWuyh4HoP9ToFZpbaURU", "aRTQmQnkvTJkm7ScUYSooSdm5hnpz0niBRLQpXdG");
     }
 }

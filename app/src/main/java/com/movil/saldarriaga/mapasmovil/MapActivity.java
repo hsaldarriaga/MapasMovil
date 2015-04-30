@@ -8,7 +8,9 @@ import android.location.Location;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -25,10 +27,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+
+import java.util.List;
 
 
 public class MapActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener, OnMapReadyCallback {
+        GoogleApiClient.OnConnectionFailedListener, LocationListener, OnMapReadyCallback, FindCallback<ParseObject> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,12 +76,16 @@ public class MapActivity extends ActionBarActivity implements GoogleApiClient.Co
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
         mRequestingLocationUpdates = true;
+        Button bt = (Button)findViewById(R.id.button);
+        bt.setText("Stop");
     }
 
     protected void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(
                 mGoogleApiClient, this);
         mRequestingLocationUpdates = false;
+        Button bt = (Button)findViewById(R.id.button);
+        bt.setText("Resume");
     }
 
     @Override
@@ -88,7 +100,12 @@ public class MapActivity extends ActionBarActivity implements GoogleApiClient.Co
         MapView.onResume();
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             startLocationUpdates();
+            Button bt = (Button)findViewById(R.id.button);
+            bt.setText("Resume");
+            bt.setEnabled(true);
         }
+
+        LoadData();
     }
 
     @Override
@@ -159,6 +176,7 @@ public class MapActivity extends ActionBarActivity implements GoogleApiClient.Co
                 LatLng pos = new LatLng(location.getLatitude(), location.getLongitude());
                 CameraPosition cam = CameraPosition.builder().target(pos).zoom(15).build();
                 mapa.animateCamera(CameraUpdateFactory.newCameraPosition(cam), 2000, null);
+                SaveData(mCurrentLocation.getLongitude(), mCurrentLocation.getLatitude());
             }
             else {
                 float distance = location.distanceTo(mCurrentLocation);
@@ -168,6 +186,7 @@ public class MapActivity extends ActionBarActivity implements GoogleApiClient.Co
                     CameraPosition cam = CameraPosition.builder().target(pos).zoom(15).build();
                     mapa.animateCamera(CameraUpdateFactory.newCameraPosition(cam), 2000, null);
                     mCurrentLocation = location;
+                    SaveData(mCurrentLocation.getLongitude(), mCurrentLocation.getLatitude());
                 }
             }
         }
@@ -221,6 +240,41 @@ public class MapActivity extends ActionBarActivity implements GoogleApiClient.Co
         @Override
         public void onDismiss(DialogInterface dialog) {
             ((MapActivity)getActivity()).onDialogDismissed();
+        }
+    }
+
+    public void LoadData()
+    {
+        ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("positions");
+        query.findInBackground(this);
+    }
+
+    @Override
+    public void done(List<ParseObject> parseObjects, ParseException e) {
+        if (e != null) {
+            for (ParseObject po : parseObjects) {
+                double lat = po.getDouble("lat");
+                double lon = po.getDouble("lon");
+                LatLng pos = new LatLng(lat, lon);
+                mapa.addMarker(new MarkerOptions().position(pos));
+            }
+        }
+    }
+
+    public void SaveData(double lon, double lat)
+    {
+        ParseObject obj = new ParseObject("positions");
+        obj.put("lat", lat);
+        obj.put("lon", lon);
+        obj.saveInBackground();
+    }
+
+    public void onClick(View v)
+    {
+        if (mRequestingLocationUpdates) {
+            stopLocationUpdates();
+        } else {
+            startLocationUpdates();
         }
     }
 }
