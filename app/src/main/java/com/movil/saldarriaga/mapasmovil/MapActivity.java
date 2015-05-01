@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.parse.FindCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -49,6 +50,8 @@ public class MapActivity extends ActionBarActivity implements GoogleApiClient.Co
         MapView.getMapAsync(this);
         buildGoogleApiClient();
         createLocationRequest();
+        Parse.enableLocalDatastore(this);
+        Parse.initialize(this, "5VOniCrxNbtIUmRQ2JYLIWuyh4HoP9ToFZpbaURU", "aRTQmQnkvTJkm7ScUYSooSdm5hnpz0niBRLQpXdG");
     }
 
     @Override
@@ -251,7 +254,7 @@ public class MapActivity extends ActionBarActivity implements GoogleApiClient.Co
 
     @Override
     public void done(List<ParseObject> parseObjects, ParseException e) {
-        if (e != null) {
+        if (parseObjects != null) {
             for (ParseObject po : parseObjects) {
                 double lat = po.getDouble("lat");
                 double lon = po.getDouble("lon");

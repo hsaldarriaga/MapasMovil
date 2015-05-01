@@ -39,7 +39,5 @@ public class MainActivity extends ActionBarActivity {
                 finish();
                 break;
         }
-        Parse.enableLocalDatastore(this);
-        Parse.initialize(this, "5VOniCrxNbtIUmRQ2JYLIWuyh4HoP9ToFZpbaURU", "aRTQmQnkvTJkm7ScUYSooSdm5hnpz0niBRLQpXdG");
     }
 }
